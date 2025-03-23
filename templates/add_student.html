@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Student</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Add Student</h1>
+    <form id="addStudentForm" action="/add_student" method="POST" enctype="multipart/form-data">
+      <div class="input-group">
+        <label for="reg_number">Register Number</label>
+        <input type="text" id="reg_number" name="reg_number" required>
+      </div>
+      <div class="input-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="input-group">
+        <label for="phone_number">Phone Number</label>
+        <input type="text" id="phone_number" name="phone_number" required>
+      </div>
+      <div class="input-group">
+        <label for="course_name">Course Name</label>
+        <select id="course_name" name="course_name" required>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Physics">Physics</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="mentor">Mentor</label>
+        <select id="mentor" name="mentor" required>
+          <option value="Dr. Smith">Dr. Smith</option>
+          <option value="Dr. Johnson">Dr. Johnson</option>
+          <option value="Dr. Brown">Dr. Brown</option>
+        </select>
+    </div>
+      <button type="submit">Add Student</button>
+    </form>
+  </div>
+</body>
+</html>
