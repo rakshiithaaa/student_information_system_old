@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Step 1: Checkout code from GitHub
-                git branch: 'main', url: 'https://github.com/rakshiithaaa/student_information_system.git'
+                git branch: 'master', url: 'https://github.com/rakshiithaaa/student_information_system.git'
             }
         }
         
