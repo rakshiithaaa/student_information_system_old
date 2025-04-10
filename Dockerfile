@@ -6,9 +6,9 @@ COPY . /app
 
 RUN pip install flask
 
-ENV flask_app=app.py
-ENV flask_run_host=0.0.0.0
-ENV flask_run_port=5000
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_RUN_PORT=5000
 
 EXPOSE 5000
  
