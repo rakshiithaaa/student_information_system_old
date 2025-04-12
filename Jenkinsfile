@@ -1,55 +1,33 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'student-management'
-        CONTAINER_NAME = 'student-prod-5018'
-        HOST_PORT = '5018'
-        CONTAINER_PORT = '5000'
-    }
-
     stages {
-        stage('Clone Repo') {
+        stage('Checkout Code') {
             steps {
-                echo 'Cloning repository...'
-                // Jenkins will clone the repo automatically if using pipeline from SCM
+                git branch: 'main',
+                    url: 'https://github.com/abhishripathak/Study-Schedule-app.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
-                script {
-                    sh "docker build -t $IMAGE_NAME ."
-                }
+                echo '📦 Building the project...'
+                // Add build steps here, like installing dependencies if needed
             }
         }
 
-        stage('Stop & Remove Old Container') {
+        stage('Run Tests') {
             steps {
-                script {
-                    sh "docker stop $CONTAINER_NAME || true"
-                    sh "docker rm $CONTAINER_NAME || true"
-                }
+                echo '✅ Running tests...'
+                // Add test execution commands if you have tests
             }
         }
 
-        stage('Run Container on Port 5018') {
+        stage('Deploy') {
             steps {
-                script {
-                    sh """
-                        docker run -d \
-                        --name $CONTAINER_NAME \
-                        -p $HOST_PORT:$CONTAINER_PORT \
-                        $IMAGE_NAME
-                    """
-                }
+                echo '🚀 Deploying the application...'
+                // Add your deployment steps here (copy files, run Django server, etc.)
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline completed.'
         }
     }
 }
