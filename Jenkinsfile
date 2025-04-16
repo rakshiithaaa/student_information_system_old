@@ -24,6 +24,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '📦 Building the project...'
+                
                 // Add build steps here, like installing dependencies if needed
             }
         }
@@ -32,6 +33,12 @@ pipeline {
             steps {
                 echo '✅ Running tests...'
                 // Add test execution commands if you have tests
+            }
+        }
+
+        stage('Run Flask Container'){
+            steps{
+                sh 'docker run -d -p 5000:5000 flask-app'
             }
         }
 
