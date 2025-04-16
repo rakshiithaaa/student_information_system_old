@@ -12,21 +12,36 @@ pipeline {
         stage('Build') {
             steps {
                 echo '📦 Building the project...'
-                // Add build steps here, like installing dependencies if needed
+                // No build step needed for Flask unless you compile assets
             }
         }
 
         stage('Run Tests') {
             steps {
                 echo '✅ Running tests...'
-                // Add test execution commands if you have tests
+                // Add pytest or unit test command if needed
             }
         }
 
         stage('Deploy') {
             steps {
-                echo '🚀 Deploying the application...'
-                // Add your deployment steps here (copy files, run Django server, etc.)
+                echo '🚀 Deploying with Docker...'
+
+                script {
+                    // Build the Docker image
+                    sh 'docker build -t student-info-flask-app .'
+
+                    // Stop and remove any existing container with the same name
+                    sh '''
+                        docker stop student-info-container || true
+                        docker rm student-info-container || true
+                    '''
+
+                    // Run the new container
+                    sh '''
+                        docker run -d --name student-info-container -p 5000:5000 student-info-flask-app
+                    '''
+                }
             }
         }
     }
