@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Marks</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="body-add">
+
+  <div class="container-add">
+    <h1 class="page-title">STUDENT INFORMATION SYSTEM</h1>
+    <h2 class="sub-title">UPLOAD MARKS</h2>
+
+    <!-- Upload Marks Form -->
+    <form id="uploadMarksForm">
+      <div class="input-row">
+        <div class="input-group-add">
+          <label for="reg_number">Registration Number</label>
+          <select id="reg_number" name="reg_number" required>
+            <option value="">Select Registration Number</option>
+            {% for reg_number in reg_numbers %}
+                <option value="{{ reg_number }}">{{ reg_number }}</option>
+            {% endfor %}
+        </select>        
+        </div>
+      </div>
+
+      <!-- Display Student Info -->
+      <div id="studentInfo" style="display:none;">
+        <div class="input-row">
+          <div class="input-group-add">
+            <label for="student_name">Name</label>
+            <input type="text" id="student_name" name="student_name" disabled>
+          </div>
+          <div class="input-group-add">
+            <label for="phone_number">Phone Number</label>
+            <input type="text" id="phone_number" name="phone_number" disabled>
+          </div>
+          <div class="input-group-add">
+            <label for="course_name">Course</label>
+            <input type="text" id="course_name" name="course_name" disabled>
+          </div>
+          <div class="input-group-add">
+            <label for="mentor">Mentor</label>
+            <input type="text" id="mentor" name="mentor" disabled>
+          </div>
+        </div>
+
+        <!-- Semester and Marks Inputs -->
+        <div class="input-row">
+          <div class="input-group-add">
+            <label for="semester">Semester</label>
+            <select id="semester" name="semester" required>
+              <option value="">Select Semester</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="3">Semester 3</option>
+              <option value="4">Semester 4</option>
+              <option value="5">Semester 5</option>
+              <option value="6">Semester 6</option>
+              <option value="7">Semester 7</option>
+              <option value="8">Semester 8</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Subject and Marks Input (initial 4 fields) -->
+        <div id="marks-inputs">
+          <div class="marks-row">
+            <input type="text" placeholder="Subject" class="subject">
+            <input type="number" placeholder="Marks" class="marks">
+          </div>
+          <div class="marks-row">
+            <input type="text" placeholder="Subject" class="subject">
+            <input type="number" placeholder="Marks" class="marks">
+          </div>
+          <div class="marks-row">
+            <input type="text" placeholder="Subject" class="subject">
+            <input type="number" placeholder="Marks" class="marks">
+          </div>
+          <div class="marks-row">
+            <input type="text" placeholder="Subject" class="subject">
+            <input type="number" placeholder="Marks" class="marks">
+          </div>
+        </div>
+
+        <button type="button" onclick="addSubject()">Add Subject</button>
+      </div>
+
+      <div class="button-container-add">
+        <button type="submit" class="submit-button">Submit Marks</button>
+        <button type="button" class="cancel-button" onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Fetch student details based on selected registration number
+    document.getElementById('reg_number').addEventListener('change', function() {
+    const regNumber = this.value;
+    if (regNumber) {
+        fetch(`/get_student_info/${regNumber}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('student_name').value = data.student.name;
+                    document.getElementById('phone_number').value = data.student.phone_number;
+                    document.getElementById('course_name').value = data.student.course_name;
+                    document.getElementById('mentor').value = data.student.mentor;
+                    document.getElementById('studentInfo').style.display = 'block';
+                } else {
+                    alert('Student information not found!');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching student data:', error);
+                alert('Error fetching student data');
+            });
+    } else {
+        document.getElementById('studentInfo').style.display = 'none';
+    }
+});
+
+    // Add a new subject and marks input row
+    function addSubject() {
+    const newRow = document.createElement('div');
+    newRow.classList.add('marks-row');
+    newRow.innerHTML = `
+        <input type="text" placeholder="Subject" class="subject">
+        <input type="number" placeholder="Marks" class="marks">
+    `;
+    document.getElementById('marks-inputs').appendChild(newRow);
+}
+
+    // Form submission
+    document.getElementById('uploadMarksForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const regNumber = document.getElementById('reg_number').value;
+    const semester = document.getElementById('semester').value;
+    const subjects = document.querySelectorAll('.subject');
+    const marks = document.querySelectorAll('.marks');
+    const submitButton = document.querySelector('.submit-button');
+
+    // Prepare data
+    const marksData = [];
+    for (let i = 0; i < subjects.length; i++) {
+        const subject = subjects[i].value.trim();
+        const mark = marks[i].value.trim();
+        
+        if (subject && mark) {
+            // Convert mark to number and validate
+            const markNum = parseInt(mark);
+            if (isNaN(markNum)) {
+                alert('Marks must be numeric!');
+                return;
+            }
+            if (markNum < 0 || markNum > 100) {
+                alert('Marks must be between 0 and 100!');
+                return;
+            }
+            marksData.push({ subject, mark: markNum });
+        }
+    }
+
+    // Rest of your submission code remains the same...
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting...";
+
+    fetch('/submit_marks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            reg_number: regNumber, 
+            semester: semester, 
+            marks: marksData 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Marks uploaded successfully!');
+            window.location.reload();
+        } else {
+            throw new Error(data.message || 'Submission failed');
+        }
+    })
+    .catch(error => {
+        alert(error.message);
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit Marks";
+    });
+});
+
+  </script>
+
+</body>
+</html>

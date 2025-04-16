@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Department Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="body-add">
+
+  <div class="container-add">
+    <h1 class="page-title">STUDENT INFORMATION SYSTEM</h1>
+    <h2 class="sub-title">DEPARTMENT MANAGEMENT</h2>
+
+    <!-- Add Department Form -->
+    <form id="departmentForm">
+      <div class="input-row">
+        <div class="input-group-add">
+          <label for="course_name">Course</label>
+          <input type="text" id="course_name" name="course_name" required>
+        </div>
+        <div class="input-group-add">
+          <label for="mentor_name">Mentor</label>
+          <input type="text" id="mentor_name" name="mentor_name" required>
+        </div>
+      </div>
+
+      <div class="button-container-add">
+        <button type="submit" class="submit-button">Add Department</button>
+        <button type="button" class="cancel-button" onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+      </div>
+    </form>
+
+    <!-- Departments Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Course</th>
+            <th>Mentor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for department in departments %}
+          <tr>
+            <td><input type="radio" name="department" value="{{ department[0] }}"></td>
+            <td>{{ department[0] }}</td>
+            <td>{{ department[1] }}</td>
+            <td>{{ department[2] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="button-container-add">
+      <button type="button" class="delete-button" onclick="deleteDepartment()">Delete Department</button>
+    </div>
+
+  </div>
+
+  <script>
+    document.getElementById('departmentForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const courseName = document.getElementById('course_name').value.trim();
+      const mentorName = document.getElementById('mentor_name').value.trim();
+
+      fetch('/add_department', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ course_name: courseName, mentor_name: mentorName })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Department added successfully!");
+          window.location.reload();
+        } else {
+          alert("Error: " + data.message);
+        }
+      });
+    });
+
+    function deleteDepartment() {
+      const selectedDepartment = document.querySelector('input[name="department"]:checked');
+      if (selectedDepartment) {
+        const departmentId = selectedDepartment.value;
+
+        fetch(`/delete_department/${departmentId}`, { method: 'DELETE' })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert("Department deleted successfully!");
+              window.location.reload();
+            } else {
+              alert("Error: " + data.message);
+            }
+          });
+      } else {
+        alert("Please select a department to delete.");
+      }
+    }
+  </script>
+
+</body>
+</html>

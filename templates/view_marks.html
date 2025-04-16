@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Marks</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="body-add">
+  <div class="container-add">
+    <h1 class="page-title">STUDENT INFORMATION SYSTEM</h1>
+    <h2 class="sub-title">VIEW MARKS</h2>
+
+    <!-- Student Selection -->
+    <div class="form-container">
+      <div class="input-row">
+        <div class="input-group-add">
+          <label for="view_reg_number">Registration Number</label>
+          <select id="view_reg_number" name="reg_number" required>
+            <option value="">Select Registration Number</option>
+            {% for reg_number in reg_numbers %}
+                <option value="{{ reg_number }}">{{ reg_number }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Info Display -->
+    <div id="view_student_info" style="display:none; margin-top:20px;">
+      <h3>Student Information</h3>
+      <div class="input-row">
+        <div class="input-group-add">
+          <label for="view_student_name">Name</label>
+          <input type="text" id="view_student_name" disabled>
+        </div>
+        <div class="input-group-add">
+          <label for="view_phone_number">Phone Number</label>
+          <input type="text" id="view_phone_number" disabled>
+        </div>
+        <div class="input-group-add">
+          <label for="view_course_name">Course</label>
+          <input type="text" id="view_course_name" disabled>
+        </div>
+        <div class="input-group-add">
+          <label for="view_mentor">Mentor</label>
+          <input type="text" id="view_mentor" disabled>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semester Selection -->
+    <div id="semester_selection" style="display:none; margin-top:20px;">
+      <div class="input-row">
+        <div class="input-group-add">
+          <label for="view_semester">Semester</label>
+          <select id="view_semester" name="semester" required>
+            <option value="">Select Semester</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+            <option value="3">Semester 3</option>
+            <option value="4">Semester 4</option>
+            <option value="5">Semester 5</option>
+            <option value="6">Semester 6</option>
+            <option value="7">Semester 7</option>
+            <option value="8">Semester 8</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marks Display -->
+    <div id="marks_display" style="display:none; margin-top:20px;">
+      <h3>Marks Details</h3>
+      <table id="marks_table">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Marks</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      
+      <div class="input-row" style="margin-top:20px;">
+        <div class="input-group-add">
+          <label for="total_marks">Total Marks</label>
+          <input type="text" id="total_marks" disabled>
+        </div>
+        <div class="input-group-add">
+          <label for="overall_status">Overall Status</label>
+          <input type="text" id="overall_status" disabled>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-container-add" style="margin-top:30px;">
+      <button type="button" class="cancel-button" onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+    </div>
+  </div>
+
+  <script>
+    // Fetch student details when registration number is selected
+    document.getElementById('view_reg_number').addEventListener('change', function() {
+      const regNumber = this.value;
+      if (regNumber) {
+        fetch(`/get_student_info/${regNumber}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              document.getElementById('view_student_name').value = data.student.name;
+              document.getElementById('view_phone_number').value = data.student.phone_number;
+              document.getElementById('view_course_name').value = data.student.course_name;
+              document.getElementById('view_mentor').value = data.student.mentor;
+              document.getElementById('view_student_info').style.display = 'block';
+              document.getElementById('semester_selection').style.display = 'block';
+              document.getElementById('marks_display').style.display = 'none';
+            } else {
+              alert('Student information not found!');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Error fetching student data');
+          });
+      } else {
+        document.getElementById('view_student_info').style.display = 'none';
+        document.getElementById('semester_selection').style.display = 'none';
+        document.getElementById('marks_display').style.display = 'none';
+      }
+    });
+
+    // Fetch marks when semester is selected
+    document.getElementById('view_semester').addEventListener('change', function() {
+      const regNumber = document.getElementById('view_reg_number').value;
+      const semester = this.value;
+      
+      if (regNumber && semester) {
+        fetch(`/get_marks/${regNumber}/${semester}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.marks.length > 0) {
+              const tableBody = document.querySelector('#marks_table tbody');
+              tableBody.innerHTML = '';
+              
+              let totalMarks = 0;
+              let allPassed = true;
+              const passMark = 40; // Minimum marks to pass
+              
+              data.marks.forEach(mark => {
+                const row = document.createElement('tr');
+                const status = mark.mark >= passMark ? 'Pass' : 'Fail';
+                if (mark.mark < passMark) allPassed = false;
+                
+                totalMarks += mark.mark;
+                
+                row.innerHTML = `
+                  <td>${mark.subject}</td>
+                  <td>${mark.mark}</td>
+                  <td>${status}</td>
+                `;
+                tableBody.appendChild(row);
+              });
+              
+              document.getElementById('total_marks').value = totalMarks;
+              document.getElementById('overall_status').value = allPassed ? 'Pass' : 'Fail';
+              document.getElementById('marks_display').style.display = 'block';
+            } else {
+              alert('No marks found for this semester!');
+              document.getElementById('marks_display').style.display = 'none';
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Error fetching marks data');
+          });
+      }
+    });
+  </script>
+</body>
+</html>

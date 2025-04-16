@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="body-add">
+
+  <!-- Main Content -->
+  <div class="container-add">
+    <h1 class="page-title">STUDENT INFORMATION SYSTEM</h1>
+    <h2 class="sub-title">USER MANAGEMENT</h2>
+
+    <!-- Add User Form -->
+    <div class="form-container">
+      <form id="profileForm">
+        <div class="input-row">
+          <div class="input-group-add">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+          </div>
+          <div class="input-group-add">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="button-container-add">
+      <button type="submit" class="submit-button" form="profileForm">Add User</button>
+      <button type="button" class="edit-button" id="editButton">Edit Selected</button>
+      <button type="button" class="cancel-button" onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Password</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td><input type="radio" name="user" value="{{ user[0] }}"></td>  <!-- Radio button with user ID -->
+            <td>{{ user[0] }}</td>  <!-- ID -->
+            <td>{{ user[1] }}</td>  <!-- Username -->
+            <td>{{ user[2] }}</td>  <!-- Password -->
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>    
+
+  <!-- JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Fetch current user data
+    fetch('/get_current_user')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.user) {
+                document.getElementById('username').value = data.user.username;
+                document.getElementById('username').dataset.currentId = data.user.id;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching current user:', error);
+        });
+
+    // Handle form submission
+    document.getElementById('profileForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const userId = document.getElementById('username').dataset.currentId;
+        const submitButton = document.querySelector('.submit-button');
+        const isEditMode = !!userId;
+
+        // Validate inputs
+        if (!username || !password) {
+            alert("Both username and password are required");
+            return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = isEditMode ? "Updating..." : "Adding...";
+
+        const endpoint = isEditMode ? `/update_user/${userId}` : '/add_user';
+        const method = isEditMode ? 'PUT' : 'POST';
+
+        fetch(endpoint, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(data.message || (isEditMode ? "User updated successfully!" : "User added successfully!"));
+            window.location.reload();
+        })
+        .catch(error => {
+            alert(error.message);
+        })
+        .finally(() => {
+            submitButton.disabled = false;
+            submitButton.textContent = isEditMode ? "Update User" : "Add User";
+        });
+    });
+
+    // Handle edit button
+    // Handle Edit Button Click
+    document.getElementById('editButton').addEventListener('click', function() {
+    const selectedUser = document.querySelector('input[name="user"]:checked');
+    if (selectedUser) {
+        window.location.href = `/edit_profile/${selectedUser.value}`;
+    } else {
+        alert("Please select a user to edit");
+    }
+});
+
+      // Modify form submission for edit mode
+      document.getElementById('profileForm').addEventListener('submit', function(event) {
+        if (this.dataset.mode === "edit") {
+          event.preventDefault();
+          const userId = this.dataset.userId;
+          const username = document.getElementById('username').value.trim();
+          const password = document.getElementById('password').value.trim();
+          const submitButton = document.querySelector('.submit-button');
+
+          submitButton.disabled = true;
+          submitButton.textContent = "Updating...";
+
+          fetch(`/update_user/${userId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: username,
+              password: password
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert("User updated successfully!");
+              window.location.reload();
+            } else {
+              throw new Error(data.message || "Failed to update user");
+            }
+          })
+          .catch(error => {
+            alert(error.message);
+          })
+          .finally(() => {
+            submitButton.disabled = false;
+            submitButton.textContent = "Update User";
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

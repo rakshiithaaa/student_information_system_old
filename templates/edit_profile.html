@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit User Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="body-add">
+
+  <div class="container-add">
+    <h1 class="page-title">EDIT USER PROFILE</h1>
+    
+    <div class="form-container">
+      <form id="editProfileForm">
+        <input type="hidden" id="userId" value="{{ user.id }}">
+        <div class="input-row">
+          <div class="input-group-add">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="{{ user.username }}" required>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group-add">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" value="{{ user.password }}" required>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="button-container-add">
+      <button type="submit" class="submit-button" form="editProfileForm">Update Profile</button>
+      <button type="button" class="delete-button" id="deleteButton">Delete User</button>
+      <button type="button" class="cancel-button" onclick="window.location.href='/profile'">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const userId = document.getElementById('userId').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const originalUsername = "{{ user.username }}";
+      const originalPassword = "{{ user.password }}";
+      const button = document.querySelector('.submit-button');
+
+      // Check if no changes were made
+      if (username === originalUsername && password === originalPassword) {
+        alert("No changes detected");
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Updating...";
+
+      // Check if username was changed and exists
+      if (username !== originalUsername) {
+        fetch(`/check_username?username=${encodeURIComponent(username)}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.exists) {
+              throw new Error("Username already exists");
+            }
+            return updateProfile();
+          })
+          .catch(error => {
+            alert(error.message);
+            button.disabled = false;
+            button.textContent = "Update Profile";
+          });
+      } else {
+        updateProfile();
+      }
+
+      function updateProfile() {
+        fetch(`/update_user/${userId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert("Profile updated successfully!");
+            window.location.href = '/profile';
+          } else {
+            throw new Error(data.message || "Failed to update profile");
+          }
+        })
+        .catch(error => {
+          alert(error.message);
+        })
+        .finally(() => {
+          button.disabled = false;
+          button.textContent = "Update Profile";
+        });
+      }
+    });
+
+    // Delete button handler
+    document.getElementById('deleteButton').addEventListener('click', function() {
+      if (confirm("Are you sure you want to delete this user?")) {
+        const userId = document.getElementById('userId').value;
+        const button = document.querySelector('.delete-button');
+        
+        button.disabled = true;
+        button.textContent = "Deleting...";
+
+        fetch(`/delete_user/${userId}`, {
+          method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert("User deleted successfully!");
+            window.location.href = '/profile';
+          } else {
+            throw new Error(data.message || "Failed to delete user");
+          }
+        })
+        .catch(error => {
+          alert(error.message);
+        })
+        .finally(() => {
+          button.disabled = false;
+          button.textContent = "Delete User";
+        });
+      }
+    });
+  </script>
+</body>
+</html>
