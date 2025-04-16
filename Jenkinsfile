@@ -13,7 +13,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image from the Dockerfile located in the root directory
-                    sh 'docker build -t flask-app .'
+                    sh 'docker build -t flask-app -f Dockerfile .'
                 }
             }
         }
