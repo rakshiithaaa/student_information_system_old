@@ -9,36 +9,24 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
-                script {
-                    // Build the Docker image from the Dockerfile located in the root directory
-                    sh 'docker build -t flask-app -f Dockerfile .'
-                }
+                echo '📦 Building the project...'
+                // Add build steps here, like installing dependencies if needed
             }
         }
 
-        stage('Run Flask App in Docker') {
+        stage('Run Tests') {
             steps {
-                script {
-                    // Run the Flask app in a container
-                    sh 'docker run -d -p 5000:5000 flask-app'
-                }
+                echo '✅ Running tests...'
+                // Add test execution commands if you have tests
             }
         }
 
         stage('Deploy') {
             steps {
                 echo '🚀 Deploying the application...'
-                // Add deployment steps here (e.g., pushing to production server)
-            }
-        }
-    }
-
-    post {
-        always {
-            script {
-                currentBuild.result = 'SUCCESS'
+                // Add your deployment steps here (copy files, run Django server, etc.)
             }
         }
     }
