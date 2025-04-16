@@ -10,62 +10,72 @@
   <!-- Navigation Bar -->
   <nav>
     <ul>
-      <li><a href="/dashboard">Dashboard</a></li>
-      <li><a href="/courses">Courses</a></li>
+
       <li><a href="/department">Department</a></li>
+      <li><a href="/marks">Marks</a></li>
       <li><a href="/profile">Profile</a></li>
+      
+      <!-- Logout button pushed to right -->
+      <li style="margin-left: auto; margin-right: 20px;">
+        <a href="{{ url_for('login') }}" style="background-color: #dc3545; padding: 5px 15px; border-radius: 4px;">
+          Logout
+        </a>
+      </li>
     </ul>
   </nav>
 
-  <div class="container">
-    <h1>Student Information System</h1>
-
-    <!-- Buttons for Add, Edit, Delete -->
+  <!-- Main Content -->
+  <h1 style="font-size: 60px;">Student Information System</h1>
+  <div class="containertb">
+    <!-- Buttons for Add, Edit -->
     <div class="button-container">
-      <h2>Student Details</h2>
+      <h2 style="font-size: 30px;">Student Details Dashboard</h2>
       <div class="action-buttons">
-        <button onclick="window.location.href='/add_student'">Add Student</button>
+        <button onclick="window.location.href='/add_student'">Add Student</button> 
         <button onclick="editStudent()">Edit Student</button>
-        <script>
-          function editStudent() {
-              const selectedStudent = document.querySelector('input[name="student"]:checked');
-              if (selectedStudent) {
-                  window.location.href = `/edit_student/${selectedStudent.value}`;
-              } else {
-                  alert("Please select a student to edit.");
-              }
-          }
-        </script>
-        <button id="deleteButton">Delete Student</button>
       </div>
     </div>
 
+    <!-- Student Table -->
     <table id="studentTable">
-        <thead>
-          <tr>
-            <th>Select</th>
-            <th>Register Number</th>
-            <th>Name</th>
-            <th>Phone Number</th>
-            <th>Course Name</th>
-            <th>Mentor</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for student in students %}
-          <tr>
-            <td><input type="radio" name="student" value="{{ student.id }}"></td>
-            <td>{{ student.reg_number }}</td>
-            <td>{{ student.name }}</td>
-            <td>{{ student.phone_number }}</td>
-            <td>{{ student.course_name }}</td>
-            <td>{{ student.mentor }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>  
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Register Number</th>
+          <th>Name</th>
+          <th>Phone Number</th>
+          <th>Course Name</th>
+          <th>Mentor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr>
+          <!--Radio Button For Table-->
+          <td><input type="radio" name="student" value="{{ student[0] }}"></td>
+          <td>{{ student[1] }}</td>
+          <td>{{ student[2] }}</td>
+          <td>{{ student[3] }}</td>
+          <td>{{ student[4] }}</td>
+          <td>{{ student[5] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+<script>
+  // Edit Student Function
+  function editStudent() {
+    const selectedStudent = document.querySelector('input[name="student"]:checked');
+    if (selectedStudent) {
+      window.location.href = `/edit_student/${selectedStudent.value}`;
+    } else {
+      alert("Please select a student to edit.");
+    }
+  }
+</script>
+
 </body>
 </html>
