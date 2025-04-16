@@ -4,57 +4,28 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/rakshiithaaa/student_information_system_old.git'
+                git branch: 'main', url: 'https://github.com/rakshiithaaa/student_information_system_old.git'
             }
         }
 
-        stage('Install Dependencies'){
-            steps{
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
-        stage('Run Flask App'){
-            steps{
-                sh 'nohup python app.py &'
-            }
-        }
-
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                echo '📦 Building the project...'
-                
-                // Add build steps here, like installing dependencies if needed
+                echo '📦 Building Docker image...'
+                sh 'docker build -t flask-app .'
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Flask Container') {
             steps {
-                echo '✅ Running tests...'
-                // Add test execution commands if you have tests
-            }
-        }
-
-        stage('Run Flask Container'){
-            steps{
-                sh 'docker run -d -p 5000:5000 flask-app'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo '🚀 Deploying the application...'
-                // Add your deployment steps here (copy files, run Django server, etc.)
+                echo '🚀 Running Flask container...'
+                sh 'docker run -d -p 5000:5000 --name flask-app-container flask-app'
             }
         }
     }
 
     post {
         always {
-            script {
-                currentBuild.result = 'SUCCESS'
-            }
+            echo "✅ Pipeline finished with status: ${currentBuild.currentResult}"
         }
     }
 }
