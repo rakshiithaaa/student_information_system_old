@@ -9,6 +9,18 @@ pipeline {
             }
         }
 
+        stage('Install Dependencies'){
+            steps{
+                sh 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('Run Flask App'){
+            steps{
+                sh 'nohup python app.py &'
+            }
+        }
+
         stage('Build') {
             steps {
                 echo '📦 Building the project...'
