@@ -10,11 +10,15 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            steps {
-                script {
+            steps{
                     // Build the Docker image from the Dockerfile located in the root directory
                     sh 'docker build -t flask-app .'
-                }
+            }
+        }
+
+        stage('Run Flask Container'){
+            steps{
+                sh 'docker run -d -p 5000:5000 flask-app'
             }
         }
     }
