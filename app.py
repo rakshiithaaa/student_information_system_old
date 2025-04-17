@@ -5,9 +5,9 @@ app = Flask(__name__)
 
 # Database Configuration
 db = mysql.connector.connect(
-    host="mysql-db",
-    user="appuser",
-    password="apppass",
+    host='host.docker.internal',
+    user="root",
+    password="tiger",
     database="student_db"
 )
 cursor = db.cursor()
