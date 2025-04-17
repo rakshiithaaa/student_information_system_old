@@ -17,29 +17,5 @@ pipeline {
                 }
             }
         }
-
-        stage('Run Flask App in Docker') {
-            steps {
-                script {
-                    // Run the Flask app in a container
-                    sh 'docker run -d -p 5000:5000 flask-app'
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo '🚀 Deploying the application...'
-                // Add deployment steps here (e.g., pushing to production server)
-            }
-        }
-    }
-
-    post {
-        always {
-            script {
-                currentBuild.result = 'SUCCESS'
-            }
-        }
     }
 }
