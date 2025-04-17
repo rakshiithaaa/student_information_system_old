@@ -1,13 +1,21 @@
 # Use an official Python image as base
 FROM python:3.10-slim
 
+# Install system-level dependencies required by mysqlclient
+RUN apt-get update && apt-get install -y \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
 
 # Copy dependency file
 COPY requirements.txt .
 
-# Install dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your app
