@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ap­­ppass
+      MYSQL_DATABASE: student_db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: ap­­ppass
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  web:
+    build: .
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql-db
+      DB_USER: appuser
+      DB_PASSWORD: ap­­ppass
+      DB_NAME: student_db
+    ports:
+      - "5000:5000"
