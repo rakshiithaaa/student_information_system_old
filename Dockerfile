@@ -1,32 +1,19 @@
-# Use an official Python image as base
+# Dockerfile
 FROM python:3.10-slim
 
-# Install system-level dependencies required by mysqlclient
-RUN apt-get update && apt-get install -y \
-    gcc \
-    default-libmysqlclient-dev \
-    pkg-config \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# 1) Install only pip and update it
+RUN pip install --upgrade pip
 
-# Set working directory
 WORKDIR /app
 
-# Copy dependency file
+# 2) Copy and install Python deps
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your app
+# 3) Copy the rest of your app
 COPY . .
 
-# Expose the port your Flask app runs on
 EXPOSE 5000
+ENV FLASK_APP=app.py FLASK_RUN_HOST=0.0.0.0
 
-# Set environment variables
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
-
-# Run the application
 CMD ["flask", "run"]
