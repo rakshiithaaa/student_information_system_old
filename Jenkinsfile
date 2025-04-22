@@ -18,9 +18,19 @@ pipeline {
 
     stage('Run Flask Container') {
       steps {
-        // stop & remove any old container on 5000 to avoid port conflicts
+        // Stop any container using port 5000, remove old flask-app, then run fresh
         sh '''
+          echo "🧼 Cleaning up any container using port 5000..."
+          PORT_CONTAINER=$(docker ps -q --filter "publish=5000")
+          if [ -n "$PORT_CONTAINER" ]; then
+            docker stop $PORT_CONTAINER
+            docker rm $PORT_CONTAINER
+          fi
+
+          echo "🛑 Removing existing flask-app container (if any)..."
           docker rm -f flask-app || true
+
+          echo "🚀 Starting new flask-app container on port 5000..."
           docker run -d --name flask-app -p 5000:5000 flask-app
         '''
       }
@@ -29,7 +39,7 @@ pipeline {
 
   post {
     always {
-      echo "Cleaning up dangling images..."
+      echo "🧹 Cleaning up dangling Docker images..."
       sh 'docker image prune -f'
     }
   }
